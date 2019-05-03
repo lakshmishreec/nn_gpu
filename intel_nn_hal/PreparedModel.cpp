@@ -1701,14 +1701,14 @@ bool PreparedModel::isOperationSupported(const Operation& operation, const Model
         case OperationType::RELU:
         case OperationType::RELU1:
         case OperationType::RELU6: 
-	/*{
-		const auto& input0 = model.operands[operation.inputs[0]];                           
-+                 if(input0.dimensions[0] > 1) 
-+                     {
-+                         VLOG_CHECKFAIL("dimension[0] is more than 1 ");
-+                         return false;
-+                     }
-+             }*/break;
+	{
+	const auto& input0 = model.operands[operation.inputs[0]];                           
+                 if(input0.dimensions[0] > 1) 
+                     {
+                         VLOG_CHECKFAIL("dimension[0] is more than 1 ");
+                         return false;
+                     }
+             }break;
         case OperationType::LOGISTIC:
         case OperationType::TANH:
         case OperationType::LOCAL_RESPONSE_NORMALIZATION:
