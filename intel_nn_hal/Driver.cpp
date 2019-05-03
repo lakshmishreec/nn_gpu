@@ -82,6 +82,24 @@ Return<ErrorStatus> Driver::prepareModel(const Model& model,
         return ErrorStatus::INVALID_ARGUMENT;
     }
 #endif
+
+    int count = model.operations.size();
+    std::vector<bool> supported(count, false);
+    bool status = false;
+
+    for (int i = 0; i < count; i++) {
+        const auto& operation = model.operations[i];
+        status = PreparedModel::isOperationSupported(operation, model);
+        ALOGI("Driver::prepareModel supported[%d]: %s", i, (status == true) ? "true" : "false");
+        supported[i] = status;
+        if(status == false)
+          {
+             ALOGI("unsupported operations found");
+             callback->notify(ErrorStatus::INVALID_ARGUMENT, nullptr);
+             return ErrorStatus::NONE;
+        }
+    }
+
     // TODO: make asynchronous later
 #ifndef AT_RUNTIME
     sp<PreparedModel> preparedModel = ModelFactory(mName.c_str(), model);
@@ -94,9 +112,10 @@ Return<ErrorStatus> Driver::prepareModel(const Model& model,
         return ErrorStatus::INVALID_ARGUMENT;
     }
 
+    ALOGI("Check for the initialize() Driver::prepareModel");
     if (!preparedModel->initialize()) {
         ALOGI("failed to initialize preparedmodel");
-        callback->notify(ErrorStatus::GENERAL_FAILURE, nullptr);
+        callback->notify(ErrorStatus::INVALID_ARGUMENT, nullptr);
         return ErrorStatus::INVALID_ARGUMENT;
     }
 
@@ -113,7 +132,7 @@ Return<void> Driver::getCapabilities(getCapabilities_cb cb) {
     if (mName.compare("CPU") == 0) {
         ALOGI("Cpu driver getCapabilities()");
         Capabilities capabilities = {.float32Performance = {.execTime = 0.9f, .powerUsage = 0.9f},
-                                .quantized8Performance = {.execTime = 0.9f, .powerUsage = 0.9f}};
+                                .quantized8Performance = {.execTime = 1.0f, .powerUsage = 1.0f}};
 
         ALOGI("CPU MKLDNN driver Capabilities .execTime = 0.9f, .powerUsage = 0.9f");
         cb(ErrorStatus::NONE, capabilities);
@@ -145,6 +164,7 @@ Return<void> Driver::getSupportedOperations(const Model& model,
     ALOGI("Driver getSupportedOperations()");
     int count = model.operations.size();
     std::vector<bool> supported(count, false);
+    bool status = false;
 
 #ifndef AT_RUNTIME
     if (!PreparedModel::validModel(model)) {
@@ -155,7 +175,9 @@ Return<void> Driver::getSupportedOperations(const Model& model,
 
     for (int i = 0; i < count; i++) {
         const auto& operation = model.operations[i];
-        supported[i] = PreparedModel::isOperationSupported(operation, model);
+        status = PreparedModel::isOperationSupported(operation, model);
+        ALOGI("supported[%d]: %s", i, (status == true) ? "true" : "false");
+        supported[i] = status;
     }
 #else
     if (!executor::PreparedModel::validModel(model)) {

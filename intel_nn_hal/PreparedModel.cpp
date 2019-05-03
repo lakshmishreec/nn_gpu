@@ -1225,6 +1225,7 @@ bool PreparedModel::initialize()
     bool success = false;
 
     //Check operation supoorted or not, user may not call getOpertionSupported()
+    /*
     for (const auto& operation : mModel.operations) {
         success = isOperationSupported(operation, mModel);
         dumpOperationSupport(operation,success);
@@ -1232,7 +1233,7 @@ bool PreparedModel::initialize()
             VLOG(L1, "get unsupported operation in initialize()");
             return false;
         }
-    }
+    }*/
 
     success = setRunTimePoolInfosFromHidlMemories(&mPoolInfos, mModel.pools);
     if (!success) {
@@ -1252,6 +1253,7 @@ bool PreparedModel::initialize()
     for (const auto& operation : mModel.operations) {
         VLOG(L1, "get operation %d ready to add", operation.type);
         dumpOperation(operation);
+        VLOG(L1, "dumpOperation() is done and check for operation");
         switch (operation.type) {
             case OperationType::CONV_2D:
               success = operationConv2D(operation);
@@ -1698,7 +1700,15 @@ bool PreparedModel::isOperationSupported(const Operation& operation, const Model
 
         case OperationType::RELU:
         case OperationType::RELU1:
-        case OperationType::RELU6: break;
+        case OperationType::RELU6: 
+	/*{
+		const auto& input0 = model.operands[operation.inputs[0]];                           
++                 if(input0.dimensions[0] > 1) 
++                     {
++                         VLOG_CHECKFAIL("dimension[0] is more than 1 ");
++                         return false;
++                     }
++             }*/break;
         case OperationType::LOGISTIC:
         case OperationType::TANH:
         case OperationType::LOCAL_RESPONSE_NORMALIZATION:
